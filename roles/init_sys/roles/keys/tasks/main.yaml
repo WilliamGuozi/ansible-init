@@ -1,0 +1,8 @@
+---
+#ssh信任添加
+- name: "upload keys"
+  authorized_key:
+    user: root
+    key: "{{ lookup('file', '/etc/ansible/key/deploysshkey.pub') }}"
+    state: present
+    exclusive: no

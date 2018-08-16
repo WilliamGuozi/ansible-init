@@ -1,0 +1,52 @@
+---
+#关闭selinux
+- name: "disable selinux"
+  selinux:
+    state: disabled
+
+#设置时区为UTC
+- name: "init timezone"
+  file: src=/usr/share/zoneinfo/UTC dest=/etc/localtime state=link
+
+#调整openfile大小
+- name: "ulimit configure temporary"
+  shell: ulimit -SHn 655360
+      
+- name: "modify configure of ulimit for ever"
+  copy: src=limits.conf dest=/etc/security/ owner=root mode=644
+
+#关闭邮件提醒
+- name: "shutdown mail notify"
+  shell: /bin/echo "unset MAILCHECK" >> /etc/profile && source /etc/profile
+  tags: 
+  - mailshut
+
+#关闭和禁用firewalld服务
+- name: "shutdown firewalld service"
+  systemd:
+    name: firewalld
+    state: stopped
+    enabled: no
+
+#设置history     
+- name: "history add config"
+  lineinfile:
+    dest: /etc/profile
+    line: "{{ item }}"
+  with_items:
+     - 'HISTFILESIZE=3000'
+     - "HISTTIMEFORMAT='%F %T   '"
+     - 'HISTIGNORE="history:which"'
+     - 'shopt -s histappend'
+     - 'PROMPT_COMMAND="history -a"'
+     - 'export HISTTIMEFORMAT'
+      
+- name: "history change config"
+  lineinfile:
+    dest: /etc/profile
+    regexp: '^HISTSIZE='
+    line: 'HISTSIZE=3000'
+
+#同步时间
+- name: "Time synchronization"
+  shell: ntpdate -u ntp.api.bz

@@ -1,0 +1,54 @@
+---
+#检查zabbix-agent版本
+- name: "chech zabbix-agent"
+  shell: "/usr/sbin/zabbix_agentd -V | sed -n '1p'| awk '{print $4}'"
+  register: result
+
+- name: "debug zabbix-agent"
+  debug: var=result.stdout verbosity=0
+
+#zabbix-agent安装块
+- name: "block zabbix-agent"
+  block:
+  - name: "Install Repository with zabbix"
+    yum: name=http://repo.zabbix.com/zabbix/3.4/rhel/7/x86_64/zabbix-release-3.4-2.el7.noarch.rpm state=present
+
+  - name: "install zabbix-agent"
+    yum: name="zabbix-agent" state=present
+
+#  - name: "install percona mysql plugins for mysql server"
+#    yum: name=https://www.percona.com/downloads/percona-monitoring-plugins/percona-monitoring-plugins-1.1.8/binary/redhat/7/x86_64/percona-zabbix-templates-1.1.8-1.noarch.rpm state=present
+
+#  - name: "install php php-mysql for mysql plugin"
+#    yum: name="{{item}}" state=latest
+#    with_items:
+#      - ["php","php-mysql"]
+
+  #一些自定义脚本复制到客户端
+  - name: "upload discovery_process.sh,process_check.sh scripts & userparameter_script.conf, about process cpu & memory monitor"
+    copy:  src={{ item.src }} dest={{ item.dest }} owner=root group=root mode=755
+    with_items:
+      - { src: discovery_process.sh,dest: /etc/zabbix/scripts/ }
+      - { src: process_check.sh,dest: /etc/zabbix/scripts/ }
+      - { src: userparameter_script.conf,dest: /etc/zabbix/zabbix_agentd.d/ }
+
+  - name: "modify configure of percona"
+    copy:  src={{ item.src }} dest={{ item.dest }} owner=root group=root mode=0755
+    with_items:
+      - { src: get_mysql_stats_wrapper.sh,dest: /var/lib/zabbix/percona/scripts/ }
+      - { src: ss_get_mysql_stats.php,dest: /var/lib/zabbix/percona/scripts/ }
+      - { src: userparameter_percona_mysql.conf,dest: /etc/zabbix/zabbix_agentd.d/}
+
+  - name: "copy zabbix_agentd.conf status_tcp status_disk"
+    copy: src={{ item.src }} dest={{ item.dest }} mode=0755 owner=root group=root
+    with_items:
+      - { src: zabbix_agentd.conf,dest: /etc/zabbix/ }
+      - { src: status_TCP.conf,dest: /etc/zabbix/zabbix_agentd.d/ }
+      - { src: tcp_status.sh,dest: /etc/zabbix/scripts/ }
+      - { src: userparameter_diskstats.conf,dest: /etc/zabbix/zabbix_agentd.d/ }
+      - { src: lld-disks.py,dest: /etc/zabbix/scripts/ }
+    notify: restart zabbix
+
+  - name: "server start"
+    service: name=zabbix-agent state=started enabled=true
+  when: result.stdout != zabbix_agentd_version

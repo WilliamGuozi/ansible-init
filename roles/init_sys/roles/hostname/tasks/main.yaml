@@ -1,0 +1,4 @@
+---
+#永久修改hostname
+- name: "centos 7 permanent modify hostname"
+  shell: hostnamectl --static set-hostname {{ hostname }}

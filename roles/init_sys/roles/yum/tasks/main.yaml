@@ -1,0 +1,23 @@
+---
+#添加yum源
+- name: "setup epel-release"
+  get_url: url=http://mirrors.aliyun.com/repo/epel-7.repo dest=/etc/yum.repos.d/epel.repo
+
+#安装常用软件
+- name: "install software"
+  yum: name="{{item}}" state=latest
+  with_items:
+   - ["gcc","gcc-c++","gdb","python2-pip","iotop","telnet","ntpdate","mutt","msmtp","wget","vim","htop","docker","rsync","lrzsz","psmisc","net-tools","curl","jq","lsof","nginx","tree"]
+#开机启动
+- name: "start service"
+  systemd:
+    name: "{{item}}"
+#    state: started
+#    daemon_reload: yes
+    enabled: yes
+  with_items:
+#    - 'docker'
+    - 'nginx'
+#同步时间
+- name: "Time synchronization"
+  shell: ntpdate -u ntp.api.bz

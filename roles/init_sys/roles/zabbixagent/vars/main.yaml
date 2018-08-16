@@ -1,0 +1,3 @@
+---
+#设定的版本
+zabbix_agentd_version: "3.4.8"

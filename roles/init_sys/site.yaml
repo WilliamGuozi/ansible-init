@@ -1,0 +1,14 @@
+---
+- hosts: '{{ host }}'
+  remote_user: root
+  gather_facts: false
+
+  roles:
+#    - keys
+    - hostname
+    - alisdk
+    - yum
+    - jdk
+    - optimize
+    - zabbixagent
+ #   - reboot

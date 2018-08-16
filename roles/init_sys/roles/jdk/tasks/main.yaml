@@ -1,0 +1,39 @@
+---
+#检查jdk版本
+- name: "check jdk version"
+  shell: /usr/local/jdk/bin/java -version 2>&1 | awk '/version/{print $NF}'|sed 's/\"//g'
+  register: resultt
+
+#用debug模块打印出jdk版本
+- name: "debug check jdk"
+  debug: var=resultt.stdout verbosity=0
+
+#一个安装JDK的块，块最开始先判断JDK版本是否和我们想要的版本一致，不一致才继续
+- name: "block jdk"
+  block:
+
+  #打印出机器地域信息，分三种情况：华东（从华东OSS内网下载，香港（从香港OSS内网下载），没有信息（从香港OSS外网下载）
+  - name: "Checking /data/soft directory"
+    file: path=/data/soft state=directory
+
+  - name: "Download jdk file"
+    get_url: url=https://img-cdn.ga096.cn/{{ java_version_source }} dest=/data/soft/{{ java_version_source }}
+
+  - name: "Checking directory"
+    file: path=/usr/local/jdk{{ java_version }} state=directory
+
+  - name: "Extract archive"
+    unarchive: src=/tmp/{{ java_version_source }} dest=/usr/local/ copy=no
+
+  - name: "create java link"
+    file: src=/usr/local/jdk{{ java_version }}/ dest=/usr/local/jdk state=link
+
+  - name: "create java command link"
+    file: src=/usr/local/jdk{{ java_version }}/bin/java dest=/usr/bin/java state=link
+
+  - name: "java_profile config"
+    shell: /bin/echo {{ item }} >> /etc/profile && source /etc/profile && ls -al /tmp
+    with_items:
+      - export JAVA_HOME=/usr/local/jdk
+      - export PATH=\$JAVA_HOME/bin:\$PATH
+  when: resultt.stdout != java_version

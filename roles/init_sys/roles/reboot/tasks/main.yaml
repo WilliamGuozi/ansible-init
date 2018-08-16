@@ -1,0 +1,4 @@
+---
+#一分钟后重启
+- name: "restart OS"
+  command: shutdown -r +1

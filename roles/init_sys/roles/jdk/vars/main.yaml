@@ -1,0 +1,4 @@
+---
+#JDK的版本和安装包名称
+java_version: "1.8.0_144"
+java_version_source: "jdk-8u144-linux-x64.tar.gz"
