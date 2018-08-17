@@ -6,7 +6,6 @@
   roles:
 #    - keys
     - hostname
-    - alisdk
     - yum
     - jdk
     - optimize

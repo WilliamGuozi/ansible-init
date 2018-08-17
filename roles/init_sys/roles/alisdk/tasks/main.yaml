@@ -1,8 +1,0 @@
----
-#安装Python pip
-- name: "install python-pip"
-  yum: name="python-pip" state=latest
-
-#安装阿里SDK
-- name: "aliyun sdk"
-  shell: /bin/pip install aliyun-python-sdk-ecs

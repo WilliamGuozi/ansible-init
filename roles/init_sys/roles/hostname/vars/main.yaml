@@ -1,3 +1,0 @@
----
-#jenkins传递过来的host
-hostname: {{ host }}

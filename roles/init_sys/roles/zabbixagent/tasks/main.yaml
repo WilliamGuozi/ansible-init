@@ -1,6 +1,6 @@
 ---
 #检查zabbix-agent版本
-- name: "chech zabbix-agent"
+- name: "cheching zabbix-agent"
   shell: "/usr/sbin/zabbix_agentd -V | sed -n '1p'| awk '{print $4}'"
   register: result
 
@@ -25,7 +25,7 @@
 #      - ["php","php-mysql"]
 
   #一些自定义脚本复制到客户端
-  - name: "upload discovery_process.sh,process_check.sh scripts & userparameter_script.conf, about process cpu & memory monitor"
+  - name: "upload file aoubt process cpu & memory monitor"
     copy:  src={{ item.src }} dest={{ item.dest }} owner=root group=root mode=755
     with_items:
       - { src: discovery_process.sh,dest: /etc/zabbix/scripts/ }
